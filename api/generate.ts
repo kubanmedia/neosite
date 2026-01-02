@@ -1,22 +1,22 @@
-import { generateSite } from "../src/generator";
+import { VercelRequest, VercelResponse } from '@vercel/node';
+import generateSite from '../src/generator';
 
-export const config = { runtime: "edge" };
-
-export default async function handler(req: Request) {
-  if (req.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405 });
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const body = await req.json();
-    const result = await generateSite(body.prompt, body.options);
-    return new Response(JSON.stringify(result), {
-      headers: { "Content-Type": "application/json" }
-    });
-  } catch (err: any) {
-    return new Response(
-      JSON.stringify({ status: "error", error: err.message }),
-      { status: 500 }
-    );
+    const { prompt } = req.body as { prompt: string };
+    
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    const result = await generateSite(prompt);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error generating site:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
