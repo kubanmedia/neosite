@@ -1,6 +1,14 @@
 {
   "functions": {
-    "api/*.ts": {}
+    "api/generate.ts": {
+      "runtime": "edge"
+    },
+    "api/health.ts": {
+      "runtime": "edge"
+    },
+    "api/track.ts": {
+      "runtime": "edge"
+    }
   },
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
