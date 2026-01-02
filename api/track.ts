@@ -24,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .eq('id', userId)
       .single();
 
-    if (fetcrror && fetchError.code !== 'PGRST116') {
+    if (fetchError && fetchError.code !== 'PGRST116') {
       throw fetchError;
     }
 
@@ -35,9 +35,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       lastUsed: new Date().toISOString(),
     };
 
-   const { error: upsertError } = await supabase
+    const { error: upsertError } = await supabase
       .from('users')
-      .upsert(updates);l
+      .upsert(updates);
 
     if (upsertError) throw upsertError;
 
