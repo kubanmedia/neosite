@@ -1,0 +1,1 @@
+{"root":["./vite.config.ts","./api/generate.ts","./api/health.ts","./api/track.ts","./src/generator.ts","./src/renderer.tsx"],"errors":true,"version":"5.9.3"}
