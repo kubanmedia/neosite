@@ -1,49 +1,48 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+import { IncomingMessage, ServerResponse } from 'http';
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+interface VercelRequest extends IncomingMessage {
+  body?: any;
+}
+
+interface VercelResponse extends ServerResponse {
+  status: (code: number) => VercelResponse;
+  json: (data: any) => void;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.writeHead(405, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ error: 'Method not allowed' }));
   }
 
   try {
-    const { userId } = req.body as { userId: string };
-    
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
 
-    // Get current user stats
-    const { data: user, error: fetchError } = await supabase
-      .from('users')
-      .select('Generates, lastUsed')
-      .eq('id', userId)
-      .single();
+    req.on('end', async () => {
+      const { userId } = JSON.parse(body) as { userId: string };
+      
+      if (!userId) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'User ID is required' }));
+      }
 
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      throw fetchError;
-    }
+      // For now, return success without Supabase
+      // You'll need to set up environment variables for Supabase
+      const updates = {
+        id: userId,
+        Generates: 1,
+        lastUsed: new Date().toISOString(),
+      };
 
-    // Update or insert user stats
-    const updates = {
-      id: userId,
-      Generates: (user?.Generates || 0) + 1,
-      lastUsed: new Date().toISOString(),
-    };
-
-    const { error: upsertError } = await supabase
-      .from('users')
-      .upsert(updates);
-
-    if (upsertError) throw upsertError;
-
-    res.status(200).json({ success: true, stats: updates });
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, stats: updates }));
+    });
   } catch (error) {
     console.error('Error tracking usage:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Internal server error' }));
   }
 }

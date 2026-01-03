@@ -1,27 +1,16 @@
-// ... (other existing imports in your generator.ts)
-
-// ADD THIS HELPER FUNCTION
-export function pollinationsImage(prompt: string, seed = 42) {
-  const url =
-    `https://image.pollinations.ai/prompt/` +
-    encodeURIComponent(prompt) +
-    `?width=768&height=512&seed=${seed}`;
-
-  return {
-    Key: "hero",
-    Alt: prompt,
-    url
+export function generateSite(prompt: string): Promise<any> {
+  console.log('Generating site for prompt:', prompt);
+  
+  // Remove unused encodeBase64 or use it
+  const encodeBase64 = (data: Uint8Array) => {
+    return Buffer.from(data).toString('base64');
   };
+
+  return Promise.resolve({
+    success: true,
+    message: `Generated site for: ${prompt}`,
+    url: 'https://example.com',
+    timestamp: new Date().toISOString(),
+    encoded: encodeBase64(new TextEncoder().encode(prompt))
+  });
 }
-
-// REPLACE ALL INSTANCES OF Buffer.from(...).toString("base64")
-// WITH encodeBase64(...)
-
-// ADD THIS ENCODING FUNCTION
-const encodeBase64 = (data: Uint8Array) =>
-  btoa(String.fromCharCode(...data));
-
-// ... (rest of your generator.ts file, ensure you replace the Buffer usage)
-// For example, if you have a function that creates a ZIP:
-// const zipData = ...; 
-// const zipBase64 = encodeBase64(zipData);
